@@ -1,57 +1,147 @@
-# Sample Hardhat 3 Beta Project (`mocha` and `ethers`)
+# NFT Auction Marketplace
 
-This project showcases a Hardhat 3 Beta project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+## 📌 Overview
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+This project implements a decentralized NFT auction marketplace using the Hardhat development framework. It enables users to create, bid on, and settle NFT auctions while integrating real-time price data and upgradeable smart contract architecture.
 
-## Project Overview
+---
 
-This example project includes:
+## 🎯 Objectives
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+* Build a fully functional NFT auction marketplace
+* Integrate on-chain price feeds to convert ERC20 and ETH values to USD
+* Implement upgradeable smart contracts using proxy patterns
 
-## Usage
+---
 
-### Running Tests
+## 🛠️ Tech Stack
 
-To run all the tests in the project, execute the following command:
+* **Smart Contracts:** Solidity
+* **Development Framework:** Hardhat
+* **Token Standards:** ERC-721 (NFT), ERC-20
+* **Oracle Integration:** Chainlink Price Feeds
+* **Upgradeability:** UUPS / Transparent Proxy Pattern
 
-```shell
+---
+
+## ⚙️ Features
+
+### 🖼️ NFT Auction
+
+* Create auctions for ERC-721 tokens
+* Set starting price, duration, and accepted payment token (ETH or ERC20)
+* Transfer NFT ownership to the contract during auction
+
+### 💰 Bidding System
+
+* Place bids using ETH or supported ERC20 tokens
+* Enforce minimum bid increments
+* Automatically track highest bidder and bid amount
+* Refund previous bidders when outbid
+
+### ⏱️ Auction Settlement
+
+* Automatically finalize auction after expiration
+* Transfer NFT to the highest bidder
+* Transfer funds to the seller
+
+### 💵 USD Price Conversion
+
+* Use Chainlink Data Feeds to fetch real-time price data
+* Convert ETH and ERC20 bids into USD equivalent
+* Improve transparency and comparability of bids
+
+### 🔄 Upgradeable Contracts
+
+* Implement upgradeability using:
+
+  * **UUPS Proxy Pattern**, or
+  * **Transparent Proxy Pattern**
+* Enable logic upgrades without redeploying storage
+* Ensure storage layout compatibility
+
+---
+
+## 🧱 Project Structure
+
+```
+contracts/
+├── NFT.sol                # ERC721 token
+├── NFTAuction.sol         # Core auction logic
+├── PriceOracle.sol        # Chainlink integration
+├── Proxy/                 # Upgradeability contracts
+scripts/
+├── deploy.ts              # Deployment script
+├── upgrade.ts             # Upgrade script
+test/
+├── auction.test.ts        # Unit tests
+hardhat.config.ts
+```
+
+---
+
+## 🚀 Getting Started
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Compile Contracts
+
+```bash
+npx hardhat compile
+```
+
+### 3. Run Tests
+
+```bash
 npx hardhat test
 ```
 
-You can also selectively run the Solidity or `mocha` tests:
+### 4. Deploy Contracts
 
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
+```bash
+npx hardhat run scripts/deploy.ts --network <network>
 ```
 
-### Make a deployment to Sepolia
+---
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+## 🔌 Chainlink Integration
 
-To run the deployment to a local chain:
+* Fetch ETH/USD price from Chainlink Aggregator
+* Optionally fetch ERC20/USD if supported
+* Normalize decimals for accurate conversion
 
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
+---
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
+## 🔐 Security Considerations
 
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
+* Reentrancy protection on bid and withdraw functions
+* Proper access control for upgrades
+* Validation of auction parameters
+* Safe handling of ERC20 transfers
 
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
+---
 
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
+## 📈 Future Improvements
 
-After setting the variable, you can run the deployment with the Sepolia network:
+* Support for multiple concurrent auctions per user
+* Frontend UI integration (React + ethers.js)
+* Off-chain indexing (e.g., The Graph)
+* Gas optimization and batching
 
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+## 🙌 Acknowledgements
+
+* Hardhat for development tooling
+* Chainlink for decentralized oracle services
+* OpenZeppelin for secure contract libraries
