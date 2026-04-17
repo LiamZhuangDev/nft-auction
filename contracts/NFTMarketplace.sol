@@ -31,17 +31,13 @@ contract NFTMarketplace {
         bool active;
     }
 
-    mapping(uint256 => Listing) public listings; // listingId => Listing
+    Listing[] public listings;
     mapping(address => mapping(uint256 => bool)) public activeListings; // nftContract => tokenId => isActive
-    uint256 public listingCount;
 
     IAuctionHouse public auctionHouse;
-    address public feeRecipient;
-    uint256 public constant ListingfeePercent = 250; // 2.5% fee = 250 / 10,000
 
-    constructor(address _auctionContract, address _feeRecipient) {
+    constructor(address _auctionContract) {
         auctionHouse = IAuctionHouse(_auctionContract);
-        feeRecipient = _feeRecipient;
     }
 
     function listNFT(address nftContract, uint256 tokenId) 
@@ -55,20 +51,21 @@ contract NFTMarketplace {
         require(nft.ownerOf(tokenId) == msg.sender, "Only the owner can list the NFT");
         nft.approve(address(this), tokenId); // Approve marketplace to transfer the NFT
 
-        listingCount++;
-        listings[listingCount] = Listing({
+        listings.push(Listing({
             seller: msg.sender,
             nftContract: nftContract,
             tokenId: tokenId,
             active: true
-        });
+        }));
     
         activeListings[nftContract][tokenId] = true;
 
-        return listingCount; // Return the listing ID
+        return listings.length - 1; // Return the listing ID
     }
 
     function delistNFT(uint256 listingId) external {
+        require(listingId < listings.length, "Invalid listing ID");
+
         Listing storage l = listings[listingId];
         require(l.active, "Listing is not active");
         require(l.seller == msg.sender, "Only the seller can delist the NFT");
@@ -78,16 +75,23 @@ contract NFTMarketplace {
     }
 
     function createAuction(
-        address nftContract,
-        uint256 tokenId,
+        uint256 listingId,
         uint256 startPrice,
         uint256 duration
     ) external returns (uint256 auctionId) 
     {
         // Validate inputs
+        require(listingId < listings.length, "Invalid listing ID");
         require(startPrice > 0, "Start price must be greater than zero");
-        require(tokenId > 0, "Invalid token ID");
         require(duration > 0, "Duration must be greater than zero");
+
+        Listing storage l = listings[listingId];
+        address nftContract = l.nftContract;
+        uint256 tokenId = l.tokenId;
+
+        // Validate listing
+        require(l.active, "Listing is not active");
+        require(tokenId > 0, "Invalid token ID");
         require(nftContract != address(0), "Invalid NFT contract");
         require(!auctionHouse.isActive(nftContract, tokenId), "NFT is already in auction");
 
