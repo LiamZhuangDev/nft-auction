@@ -114,7 +114,7 @@ contract NFTAuctionHouse {
             uint256 sellerProceeds = a.highestBid - fee;
 
             // Transfer NFT to highest bidder
-            IERC721(a.nftContract).safeTransferFrom(a.seller, a.highestBidder, a.tokenId);
+            IERC721(a.nftContract).safeTransferFrom(address(this), a.highestBidder, a.tokenId);
 
             // Transfer funds to seller and fee recipient
             (bool successSeller, ) = a.seller.call{value: sellerProceeds}("");
