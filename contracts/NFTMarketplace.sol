@@ -49,7 +49,6 @@ contract NFTMarketplace {
 
         IERC721 nft = IERC721(nftContract);
         require(nft.ownerOf(tokenId) == msg.sender, "Only the owner can list the NFT");
-        nft.approve(address(this), tokenId); // Approve marketplace to transfer the NFT
 
         listings.push(Listing({
             seller: msg.sender,
