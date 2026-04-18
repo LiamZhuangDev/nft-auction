@@ -137,6 +137,7 @@ contract NFTAuctionHouse is IERC721Receiver {
         return activeAuctions[nftContract][tokenId];
     }
 
+    // onERC721Received is ONLY required if the receiver is a CONTRACT
     function onERC721Received(
         address operator,
         address from,
