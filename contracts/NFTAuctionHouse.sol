@@ -2,8 +2,9 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 
-contract NFTAuctionHouse {
+contract NFTAuctionHouse is IERC721Receiver {
     struct Auction {
         address seller;
         address nftContract;
@@ -134,5 +135,14 @@ contract NFTAuctionHouse {
         require(nftContract != address(0), "Invalid NFT contract");
         require(tokenId > 0, "Invalid token ID");
         return activeAuctions[nftContract][tokenId];
+    }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external pure override returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
     }
 }
