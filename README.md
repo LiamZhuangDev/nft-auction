@@ -103,9 +103,20 @@ npx hardhat test
 ### 4. Deploy Contracts
 
 ```bash
+npx hardhat node # start a local node, you can start sepolia testnet as well
 npx hardhat run scripts/deploy.ts --network <network>
 ```
 
+### 5. Interaction
+```bash
+npx hardhat run scripts/mint.ts --network <network>
+npx hardhat run scripts/approve.ts --network <network> # approve NFT ownership so auction house can receive the NFT
+npx hardhat run scripts/list.ts --network <network> # lising on marketplace 
+npx hardhat run scripts/createAuction.ts --network <network>
+npx hardhat run scripts/multiBid.ts --network <network> or npx hardhat run scripts/bid.ts --network <network>
+npx hardhat run scripts/finalizeAuction.ts --network <network> # must wait until deadline reached
+npx hardhat run scripts/withdraw.ts --network <network>
+```
 ---
 
 ## 🔌 Chainlink Integration
