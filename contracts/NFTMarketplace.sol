@@ -36,6 +36,9 @@ contract NFTMarketplace {
 
     IAuctionHouse public auctionHouse;
 
+    event Listed(address indexed seller, address nftContract, uint256 tokenId, uint256 listingId);
+    event Delisted(address indexed seller, address nftContract, uint256 tokenId, uint256 listingId);
+
     constructor(address _auctionContract) {
         auctionHouse = IAuctionHouse(_auctionContract);
     }
@@ -59,7 +62,10 @@ contract NFTMarketplace {
     
         activeListings[nftContract][tokenId] = true;
 
-        return listings.length - 1; // Return the listing ID
+        uint256 listingId = listings.length - 1;
+        emit Listed(msg.sender, nftContract, tokenId, listingId);
+
+        return listingId; // Return the listing ID
     }
 
     function delistNFT(uint256 listingId) external {
@@ -71,6 +77,8 @@ contract NFTMarketplace {
 
         l.active = false;
         activeListings[l.nftContract][l.tokenId] = false;
+        
+        emit Delisted(msg.sender, l.nftContract, l.tokenId, listingId);
     }
 
     function createAuction(
@@ -102,5 +110,9 @@ contract NFTMarketplace {
         // Create the auction
         nft.safeTransferFrom(msg.sender, address(auctionHouse), tokenId); // Transfer NFT to auction house
         auctionId = auctionHouse.createAuction(msg.sender, nftContract, tokenId, startPrice, duration);
+    }
+    
+    function getListingsCount() external view returns (uint256) {
+        return listings.length;
     }
 }
