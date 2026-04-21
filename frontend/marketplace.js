@@ -2,6 +2,37 @@ import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.10.0/+esm";
 import { getContracts } from "./contracts.js";
 import { NFT_ADDRESS } from "./config.js";
 
+const API_URL = "http://localhost:8081";
+
+export async function fetchListings() {
+    try {
+        const res = await fetch(`${API_URL}/listings`);
+        const listings = await res.json();
+
+        console.log("Listings:", listings);
+
+        renderListings(listings);
+    } catch (err) {
+        console.error("Error fetching listings:", err);
+    }
+}
+
+function renderListings(listings) {
+    const container = document.getElementById("listings");
+    container.innerHTML = "";
+
+    listings.forEach(l => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+            <p><strong>Listing ID: </strong> ${l.ID}</p>
+            <p><strong>Seller: </strong> ${l.Seller}</p>
+            <p><strong>NFT: </strong> ${l.NFT}</p>
+            <p><strong>Token ID: </strong> ${l.TokenId}</p>
+        `;
+        container.appendChild(div);
+    })
+}
+
 export async function listNFT() {
     const { marketplace } = getContracts();
 
