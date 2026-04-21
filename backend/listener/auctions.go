@@ -8,6 +8,7 @@ import (
 	"nft-backend/store"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -17,15 +18,11 @@ import (
 )
 
 func WatchAuctionEvents(client *ethclient.Client) {
-	log.Println("sss")
-
 	// Load the contract ABI
 	file, err := os.ReadFile("abi/auction.json")
 	if err != nil {
 		log.Fatal("Failed to read ABI file:", err)
 	}
-
-	log.Println("sss2")
 
 	var abiJson struct {
 		ABI json.RawMessage `json:"abi"`
@@ -35,8 +32,6 @@ func WatchAuctionEvents(client *ethclient.Client) {
 	if err != nil {
 		log.Fatal("Failed to unmarshal ABI JSON:", err)
 	}
-
-	log.Println("sss3")
 
 	abi, err := abi.JSON(strings.NewReader(string(abiJson.ABI)))
 	if err != nil {
@@ -49,6 +44,16 @@ func WatchAuctionEvents(client *ethclient.Client) {
 		Addresses: []common.Address{contractAddress},
 	}
 
+	// backfill
+	pastLogs, err := client.FilterLogs(context.Background(), query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, vLog := range pastLogs {
+		handleAuctionLog(abi, vLog)
+	}
+
+	// subscribe
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
@@ -77,6 +82,8 @@ func handleAuctionLog(abi abi.ABI, vLog types.Log) {
 
 	switch event.Name {
 	case "AuctionCreated":
+		log.Println("receive AuctionCreated event")
+
 		var data struct {
 			TokenId    *big.Int
 			StartPrice *big.Int
@@ -107,9 +114,53 @@ func handleAuctionLog(abi abi.ABI, vLog types.Log) {
 		log.Printf("AuctionCreated: ID=%d, Seller=%s, NFT=%s, TokenId=%s, StartPrice=%s, EndTime=%d",
 			auctionId.Uint64(), seller.Hex(), nftContract.Hex(), data.TokenId.String(), data.StartPrice.String(), data.EndTime.Uint64())
 	case "BidPlaced":
-		log.Println("BidPlaced event detected")
-	case "AuctionFinalized":
-		log.Println("AuctionFinalized event detected")
+		log.Println("receive BidPlaced event")
+
+		var data struct {
+			Amount *big.Int
+		}
+
+		// Unpack the non-indexed event data into the struct
+		err := abi.UnpackIntoInterface(&data, event.Name, vLog.Data)
+		if err != nil {
+			log.Printf("Failed to unpack log: %v", err)
+			return
+		}
+		// Extract indexed parameters from the topics
+		auctionId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
+		bidder := common.HexToAddress(vLog.Topics[2].Hex())
+
+		store.Bids[auctionId.Uint64()] = store.Bid{
+			AuctionId: auctionId.Uint64(),
+			Bidder:    bidder.Hex(),
+			Amount:    data.Amount.String(),
+			Timestamp: uint64(time.Now().Unix()),
+		}
+		log.Printf("BidPlaced: AuctionId=%d, Bidder=%s, Amount=%s", auctionId.Uint64(), bidder.Hex(), data.Amount.String())
+	case "AuctionEnded":
+		log.Println("receive AuctionEnded event")
+
+		var data struct {
+			Amount *big.Int
+		}
+
+		// Unpack the non-indexed event data into the struct
+		err := abi.UnpackIntoInterface(&data, event.Name, vLog.Data)
+		if err != nil {
+			log.Printf("Failed to unpack log: %v", err)
+			return
+		}
+
+		// Extract indexed parameters from the topics
+		auctionId := new(big.Int).SetBytes(vLog.Topics[1].Bytes())
+		winner := common.HexToAddress(vLog.Topics[2].Hex())
+
+		if auction, exists := store.Auctions[auctionId.Uint64()]; exists {
+			auction.Active = false
+			store.Auctions[auctionId.Uint64()] = auction
+		}
+
+		log.Printf("AuctionEnded: AuctionId=%d, Winner=%s, Amount=%s", auctionId.Uint64(), winner.Hex(), data.Amount.String())
 	default:
 		log.Printf("Unknown event: %s", vLog.Topics[0].Hex())
 	}

@@ -65,7 +65,7 @@ contract NFTMarketplace {
         uint256 listingId = listings.length - 1;
         emit Listed(msg.sender, nftContract, tokenId, listingId);
 
-        return listingId; // Return the listing ID
+        return listingId;
     }
 
     function delistNFT(uint256 listingId) external {

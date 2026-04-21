@@ -33,4 +33,6 @@ func StartListener() {
 	}()
 
 	wg.Wait()
+
+	log.Println("Listener STOPPED")
 }

@@ -72,6 +72,8 @@ func handleListingLog(abi abi.ABI, vLog types.Log) {
 
 	switch event.Name {
 	case "Listed":
+		log.Println("Handling Listed event...")
+
 		var data struct {
 			TokenId   *big.Int
 			ListingId *big.Int

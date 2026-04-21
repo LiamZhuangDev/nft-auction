@@ -1,5 +1,73 @@
 import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.10.0/+esm";
 import { getContracts } from "./contracts.js";
+import { API_URL } from "./config.js";
+
+export async function fetchAuctions() {
+  try {
+    const res = await fetch(`${API_URL}/auctions`);
+    const auctions = await res.json();
+
+    console.log("Auctions:", auctions);
+    
+    renderAuctions(auctions);
+  } catch (err) {
+    console.error("Error fetching auctions:", err);
+  }
+}
+
+function renderAuctions(auctions) {
+  const container = document.getElementById("auctions");
+  container.innerHTML = "";
+
+  auctions.forEach(a => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <p><strong>Auction ID: </strong> ${a.ID}</p>
+      <p><strong>Seller: </strong> ${a.Seller}</p>
+      <p><strong>NFT: </strong> ${a.NftContract}</p>
+      <p><strong>Token ID: </strong> ${a.TokenId}</p>
+      <p><strong>Start Price: </strong> ${ethers.formatEther(a.StartPrice)} ETH</p>
+      <p><strong>End Time: </strong> ${new Date(a.EndTime * 1000).toLocaleString()}</p>
+      <p><strong>Status: </strong> ${a.Active ? "Active" : "Inactive"}</p>
+    `;
+    container.appendChild(div);
+  })
+}
+
+export async function fetchBids() {
+  try {
+    const auctionId = document.getElementById("auctionIdInput").value;
+    if (!auctionId) {
+      alert("Please enter an auction ID");
+      return;
+    }
+
+    const res = await fetch(`${API_URL}/bids/${auctionId}`);
+    const bids = await res.json();
+
+    console.log("Bids:", bids);
+    
+    renderBids(bids);
+  } catch (err) {
+    console.error("Error fetching bids:", err);
+  }
+}
+
+function renderBids(bids) {
+  const container = document.getElementById("bids");
+  container.innerHTML = "";
+
+  bids.forEach(b => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <p><strong>Auction ID: </strong> ${b.AuctionId}</p>
+      <p><strong>Bidder: </strong> ${b.Bidder}</p>
+      <p><strong>Amount: </strong> ${ethers.formatEther(b.Amount)} ETH</p>
+      <p><strong>Timestamp: </strong> ${new Date(b.Timestamp * 1000).toLocaleString()}</p>
+    `;
+    container.appendChild(div);
+  })
+}
 
 export async function placeBid() {
   const { auction } = getContracts();

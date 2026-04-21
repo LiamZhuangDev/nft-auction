@@ -1,8 +1,6 @@
 import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.10.0/+esm";
 import { getContracts } from "./contracts.js";
-import { NFT_ADDRESS } from "./config.js";
-
-const API_URL = "http://localhost:8081";
+import { NFT_ADDRESS, API_URL } from "./config.js";
 
 export async function fetchListings() {
     try {
@@ -26,8 +24,9 @@ function renderListings(listings) {
         div.innerHTML = `
             <p><strong>Listing ID: </strong> ${l.ID}</p>
             <p><strong>Seller: </strong> ${l.Seller}</p>
-            <p><strong>NFT: </strong> ${l.NFT}</p>
+            <p><strong>NFT: </strong> ${l.NftContract}</p>
             <p><strong>Token ID: </strong> ${l.TokenId}</p>
+            <p><strong>Status: </strong> ${l.Active ? "Active" : "Inactive"}</p>
         `;
         container.appendChild(div);
     })

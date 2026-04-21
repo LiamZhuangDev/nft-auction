@@ -21,3 +21,12 @@ type Auction struct {
 }
 
 var Auctions = make(map[uint64]Auction)
+
+type Bid struct {
+	AuctionId uint64
+	Bidder    string
+	Amount    string
+	Timestamp uint64
+}
+
+var Bids = make(map[uint64]Bid)

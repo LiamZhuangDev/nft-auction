@@ -14,3 +14,5 @@ export const auctionABI = [
     "function placeBid(uint256 auctionId) payable",
     "function finalizeAuction(uint256 auctionId)"
 ];
+
+export const API_URL = "http://localhost:8081";

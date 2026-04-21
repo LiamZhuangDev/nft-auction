@@ -17,7 +17,7 @@ export async function mintNFT() {
 export async function approveNFT() {
     const { nft } = getContracts();
 
-    const tokenId = document.getElementById("approveTokenId").value;
+    const tokenId = document.getElementById("listTokenId").value;
 
     const tx = await nft.approve(MARKETPLACE_ADDRESS, tokenId);
     await tx.wait();
