@@ -17,23 +17,11 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func StartListener() {
-	log.Println("🔥 Listener STARTED")
-
-	client, err := ethclient.Dial("ws://127.0.0.1:8545/")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Close()
-
-	log.Println("Connected!")
-
-	log.Println("Subscribing to logs...")
-
+func WatchListingEvents(client *ethclient.Client) {
 	// Load the contract ABI
 	file, err := os.ReadFile("abi/marketplace.json")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to read ABI file:", err)
 	}
 
 	var abiJson struct {
@@ -42,17 +30,17 @@ func StartListener() {
 
 	err = json.Unmarshal(file, &abiJson)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to unmarshal ABI JSON:", err)
 	}
 
 	abi, err := abi.JSON(strings.NewReader(string(abiJson.ABI)))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to parse ABI:", err)
 	}
 
 	contractAddress := common.HexToAddress("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512")
 
-	// Create a filter query for the Listing event
+	// Create a filter query specifically for the Listing events
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{contractAddress},
 	}
@@ -60,7 +48,7 @@ func StartListener() {
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to subscribe to filter logs:", err)
 	}
 
 	fmt.Println("Listening for Listing events...")
@@ -68,14 +56,14 @@ func StartListener() {
 	for {
 		select {
 		case err := <-sub.Err():
-			log.Fatal(err)
+			log.Fatal("Subscription error:", err)
 		case vLog := <-logs:
-			handleLog(abi, vLog)
+			handleListingLog(abi, vLog)
 		}
 	}
 }
 
-func handleLog(abi abi.ABI, vLog types.Log) {
+func handleListingLog(abi abi.ABI, vLog types.Log) {
 	event, err := abi.EventByID(vLog.Topics[0])
 	if err != nil {
 		log.Printf("Unknown event: %s", vLog.Topics[0].Hex())
@@ -90,7 +78,7 @@ func handleLog(abi abi.ABI, vLog types.Log) {
 		}
 
 		// Unpack the non-indexed event data into the struct
-		err := abi.UnpackIntoInterface(&data, "Listed", vLog.Data)
+		err := abi.UnpackIntoInterface(&data, event.Name, vLog.Data)
 		if err != nil {
 			log.Printf("Failed to unpack log: %v", err)
 			return
