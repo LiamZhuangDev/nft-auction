@@ -1,45 +1,58 @@
 package api
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"nft-backend/store"
+	"strconv"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func StartServer() {
-	http.HandleFunc("/listings", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+	r := gin.Default()
+	r.Use(cors.Default())
+
+	r.GET("/listings", func(c *gin.Context) {
+		log.Printf("len of listed NFT: %d", len(store.Listings))
 
 		list := []store.Listing{}
 		for _, listing := range store.Listings {
 			list = append(list, listing)
 		}
-
-		json.NewEncoder(w).Encode(list)
+		c.JSON(http.StatusOK, list)
 	})
 
-	http.HandleFunc("/auctions", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-
-		log.Println("Received request for /auctions")
+	r.GET("/auctions", func(c *gin.Context) {
+		// print the count of auctions
+		log.Printf("len of auctions: %d", len(store.Auctions))
 
 		list := []store.Auction{}
 		for _, auction := range store.Auctions {
 			list = append(list, auction)
 		}
+		c.JSON(http.StatusOK, list)
+	})
 
-		log.Printf("Sending response for /auctions: %d auctions", len(list))
+	r.GET("/bids/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		auctionId, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid auction ID"})
+			return
+		}
 
-		json.NewEncoder(w).Encode(list)
+		result := []store.Bid{}
+		for _, bid := range store.Bids {
+			if bid.AuctionId == auctionId {
+				result = append(result, bid)
+			}
+		}
+		c.JSON(http.StatusOK, result)
 	})
 
 	log.Println("API Server running on http://localhost:8081")
-	err := http.ListenAndServe(":8081", nil)
-	if err != nil {
-		log.Fatalf("Server failed: %v", err)
-	}
+	r.Run(":8081")
 	log.Println("API Server stopped")
 }
