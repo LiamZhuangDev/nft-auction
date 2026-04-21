@@ -67,15 +67,22 @@ This project implements a decentralized NFT auction marketplace using the Hardha
 ```
 contracts/
 ├── NFT.sol                # ERC721 token
-├── NFTAuction.sol         # Core auction logic
-├── PriceOracle.sol        # Chainlink integration
-├── Proxy/                 # Upgradeability contracts
+├── NFTAuctionHouse.sol    # Core auction logic
+├── NFTMarketplace.sol     # NFT listing
 scripts/
 ├── deploy.ts              # Deployment script
-├── upgrade.ts             # Upgrade script
+├── mint.ts                # Mint NFT script
+├── approve.ts             # Approve the marketplace to transfer the NFT
+├── list.ts                # List NFT script
+├── createAuction.ts       # Create aunction for listed NFT script
+├── bid.ts/multiBid.ts     # bid script
+├── finalizeAuction.ts     # End aunction script
+├── withdraw.ts            # Refund script
 test/
 ├── auction.test.ts        # Unit tests
 hardhat.config.ts
+frontend
+backend
 ```
 
 ---
