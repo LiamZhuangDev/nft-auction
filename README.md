@@ -117,9 +117,24 @@ npx hardhat run scripts/multiBid.ts --network <network> or npx hardhat run scrip
 npx hardhat run scripts/finalizeAuction.ts --network <network> # must wait until deadline reached
 npx hardhat run scripts/withdraw.ts --network <network>
 ```
+### 6. Full stack workflow
+```bash
+# 1. Start a local Ethereum development node (Hardhat)
+npx hardhat node
+
+# 2. Deploy contracts to the local network
+npx hardhat run scripts/deploy.ts --network localhost
+
+# 3. Launch the frontend (serves static files on a local server)
+npx serve .
+
+# 4. Start the backend API (Go server)
+cd backend
+go run main.go
+```
 ---
 
-## 🔌 Chainlink Integration
+## 🔌 Chainlink Integration (To Do)
 
 * Fetch ETH/USD price from Chainlink Aggregator
 * Optionally fetch ERC20/USD if supported
@@ -139,7 +154,7 @@ npx hardhat run scripts/withdraw.ts --network <network>
 ## 📈 Future Improvements
 
 * Support for multiple concurrent auctions per user
-* Frontend UI integration (React + ethers.js)
+* Frontend UI framework integration (React + ethers.js)
 * Off-chain indexing (e.g., The Graph)
 * Gas optimization and batching
 
