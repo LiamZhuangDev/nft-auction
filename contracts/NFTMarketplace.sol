@@ -36,8 +36,8 @@ contract NFTMarketplace {
 
     IAuctionHouse public auctionHouse;
 
-    event Listed(address indexed seller, address nftContract, uint256 tokenId, uint256 listingId);
-    event Delisted(address indexed seller, address nftContract, uint256 tokenId, uint256 listingId);
+    event Listed(address indexed seller, address indexed nftContract, uint256 tokenId, uint256 listingId);
+    event Delisted(address indexed seller, address indexed nftContract, uint256 tokenId, uint256 listingId);
 
     constructor(address _auctionContract) {
         auctionHouse = IAuctionHouse(_auctionContract);
@@ -77,7 +77,7 @@ contract NFTMarketplace {
 
         l.active = false;
         activeListings[l.nftContract][l.tokenId] = false;
-        
+
         emit Delisted(msg.sender, l.nftContract, l.tokenId, listingId);
     }
 
