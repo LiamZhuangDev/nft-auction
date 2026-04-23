@@ -2,12 +2,16 @@ package listener
 
 import (
 	"log"
+	"nft-backend/repository"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func StartListener() {
+func StartListener(
+	listingRepo *repository.ListingRepo,
+	auctionRepo *repository.AuctionRepo,
+	bidRepo *repository.BidRepo) {
 	log.Println("Listener STARTED")
 
 	client, err := ethclient.Dial("ws://127.0.0.1:8545/")
@@ -24,12 +28,12 @@ func StartListener() {
 
 	go func() {
 		defer wg.Done()
-		WatchListingEvents(client)
+		WatchListingEvents(client, listingRepo)
 	}()
 
 	go func() {
 		defer wg.Done()
-		WatchAuctionEvents(client)
+		WatchAuctionEvents(client, auctionRepo, bidRepo)
 	}()
 
 	wg.Wait()

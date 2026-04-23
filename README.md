@@ -139,6 +139,66 @@ npx serve .
 cd backend
 go run main.go
 ```
+
+### 7. Update in-memory storage to DB
+- install gorm and mysql driver
+```bash
+cd backend
+go get -u gorm.io/gorm
+go get -u gorm.io/driver/mysql
+```
+- define models, repositories
+```
+backend
+|__models
+|__repository
+```
+- install and set up MySQL
+```bash
+sudo apt install mysql-server
+sudo systemctl start mysql
+# open MySQL CLI
+sudo mysql
+# create table, user and password
+mysql > CREATE USER 'user'@'%' IDENTIFIED BY 'password';
+mysql > GRANT ALL PRIVILEGES ON nft_marketplace.* TO 'user'@'%';
+mysql > FLUSH PRIVILEGES;
+```
+- connect DB
+```
+dsn := "user:password@tcp(127.0.0.1:3306)/nft_marketplace?charset=utf8mb4&parseTime=True&loc=Local"
+
+DB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+if err != nil {
+  log.Fatal(err)
+}
+
+// Auto migrate tables
+err = DB.AutoMigrate(&models.Listing{}, &models.Auction{}, &models.Bid{})
+if err != nil {
+  log.Fatal(err)
+}
+```
+- update in-memory data manipulation
+```Go
+// store.Auctions[auctionId.Uint64()] = store.Auction{
+// 	ID:          auctionId.Uint64(),
+// 	Seller:      seller.Hex(),
+// 	NftContract: nftContract.Hex(),
+// 	TokenId:     data.TokenId.String(),
+// 	StartPrice:  data.StartPrice.String(),
+// 	EndTime:     data.EndTime.Uint64(),
+// 	Active:      true,
+// }
+err = repository.CreateAuction(&models.Auction{
+  Seller:      seller.Hex(),
+  NftContract: nftContract.Hex(),
+  TokenId:     data.TokenId.String(),
+  StartPrice:  data.StartPrice.String(),
+  EndTime:     data.EndTime.Uint64(),
+  Active:      true,
+})
+```
 ---
 
 ## 🔌 Chainlink Integration (To Do)

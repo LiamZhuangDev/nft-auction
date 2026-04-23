@@ -1,3 +1,4 @@
+// in-memory storage, deprecated
 package store
 
 type Listing struct {

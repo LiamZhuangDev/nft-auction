@@ -5,7 +5,13 @@ import { API_URL } from "./config.js";
 export async function fetchAuctions() {
   try {
     const res = await fetch(`${API_URL}/auctions`);
-    const auctions = await res.json();
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const result = await res.json();
+    const auctions = result.data;
 
     console.log("Auctions:", auctions);
     
@@ -43,7 +49,13 @@ export async function fetchBids() {
     }
 
     const res = await fetch(`${API_URL}/bids/${auctionId}`);
-    const bids = await res.json();
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const result = await res.json();
+    const bids = result.data;
 
     console.log("Bids:", bids);
     

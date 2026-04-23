@@ -5,7 +5,13 @@ import { NFT_ADDRESS, API_URL } from "./config.js";
 export async function fetchListings() {
     try {
         const res = await fetch(`${API_URL}/listings`);
-        const listings = await res.json();
+
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const result = await res.json();
+        const listings = result.data;
 
         console.log("Listings:", listings);
 
